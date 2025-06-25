@@ -1,0 +1,21 @@
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.WebElement;
+import org.openqa.selenium.chrome.ChromeDriver;
+
+public class HelloSearch {
+    public static void main(String[] args) {
+        WebDriver driver = new ChromeDriver();
+        try {
+            driver.get("https://www.google.com.au");
+            WebElement searchBox = driver.findElement(By.name("q"));
+            searchBox.sendKeys("Hi world!!");
+            searchBox.submit();
+            System.out.println("✅ Java test complete");
+        } catch (Exception e) {
+            System.err.println("❌ Java test failed: " + e.getMessage());
+        } finally {
+            driver.quit();
+        }
+    }
+}
