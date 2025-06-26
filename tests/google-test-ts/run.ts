@@ -23,7 +23,7 @@ import chrome from "selenium-webdriver/chrome";
     console.log("🚀 Navigating to Google...");
     await driver.get("https://www.google.com");
     const searchBox = await driver.wait(until.elementLocated(By.name("q")), 5000);
-    await searchBox.sendKeys("hello world", Key.RETURN);
+    await searchBox.sendKeys("hello world1111111111111", Key.RETURN);
     await driver.wait(until.elementLocated(By.id("result-stats")), 5000);
 
     console.log("✅ TypeScript Test Passed");

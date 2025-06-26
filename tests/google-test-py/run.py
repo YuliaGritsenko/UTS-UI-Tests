@@ -26,7 +26,7 @@ try:
     time.sleep(2)
 
     search_box = driver.find_element(By.NAME, "q")
-    search_box.send_keys("hello world")
+    search_box.send_keys("hello world1111111111111")
     search_box.send_keys(Keys.RETURN)
     time.sleep(2)
 
