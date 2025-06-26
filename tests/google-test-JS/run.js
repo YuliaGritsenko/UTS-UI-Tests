@@ -5,6 +5,7 @@ const chrome = require("selenium-webdriver/chrome");
 (async function runTest() {
   let driver;
   let exitCode = 1;
+  console.log(" Test running with VISUAL_BROWSER =", process.env.VISUAL_BROWSER);
   const visual = process.env.VISUAL_BROWSER === "true";
 
   try {
