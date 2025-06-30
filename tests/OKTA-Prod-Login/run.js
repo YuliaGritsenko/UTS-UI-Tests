@@ -1,6 +1,10 @@
 const { Builder, By } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 
+function log(msg) {
+  process.stdout.write(`${msg}\n`);
+}
+
 (async function runLoginTest() {
   let driver;
   const timeoutMs = 60000;
@@ -8,9 +12,9 @@ const chrome = require("selenium-webdriver/chrome");
   const visual = process.env.VISUAL_BROWSER === "true";
   const profilePath = process.env.CHROME_USER_PROFILE || "/tmp/okta-session";
 
-  console.log("🧪 OKTA-Prod-Login starting...");
-  console.log("👁 VISUAL_BROWSER =", visual);
-  console.log("🗂 Using Chrome profile:", profilePath);
+  log("🧪 OKTA-Prod-Login starting...");
+  log(`👁 VISUAL_BROWSER = ${visual}`);
+  log(`🗂 Using Chrome profile: ${profilePath}`);
 
   try {
     const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
@@ -31,31 +35,32 @@ const chrome = require("selenium-webdriver/chrome");
       script: 30000,
     });
 
-    console.log("🌐 Navigating to https://login.uts.edu.au...");
+    log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
 
     const start = Date.now();
+
     while (Date.now() - start < timeoutMs) {
-      console.log("⏳ Waiting for user login...");
+      log("⏳ Waiting for user login...");
       try {
         const logoElements = await driver.findElements(By.css('img.logo[alt="University of Technology Sydney logo"]'));
         if (logoElements.length > 0) {
-          console.log("✅ Login successful: UTS logo detected.");
+          log("✅ Login successful: UTS logo detected.");
           if (visual) await driver.sleep(3000);
           // 🛑 Do NOT quit driver — keep session open for next test
           return;
         }
       } catch (err) {
-        console.error("⚠️ Poll error:", err.message);
+        process.stderr.write(`⚠️ Poll error: ${err.message}\n`);
       }
       await driver.sleep(pollInterval);
     }
 
-    console.error("❌ Login failed: UTS logo not detected after retrying.");
+    process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
     process.exit(1);
 
   } catch (err) {
-    console.error("🔥 Fatal error:", err.message);
+    process.stderr.write(`🔥 Fatal error: ${err.message}\n`);
     process.exit(1);
   }
 
