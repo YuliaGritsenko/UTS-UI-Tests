@@ -1,7 +1,7 @@
 {
     "title": "Example Test open google",
     "needed-parameters": {
-      "Email address to use": "testEmail",
+      "ticket number": "testEmail",
       "Expected success message": "successMessage"
     }
   }
