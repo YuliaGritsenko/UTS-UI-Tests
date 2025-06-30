@@ -1,5 +1,5 @@
 {
-    "title": "Google Test",
+    "title": "Example Test open google",
     "needed-parameters": {
       "Email address to use": "testEmail",
       "Expected success message": "successMessage"
