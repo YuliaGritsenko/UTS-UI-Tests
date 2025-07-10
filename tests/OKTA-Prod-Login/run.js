@@ -8,7 +8,8 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
   log(JSON.stringify(process.env, null, 2));
 
   const visual = process.env.VISUAL_BROWSER === "true";
-  const profilePath = process.env.CHROME_USER_PROFILE || '/tmp/okta-session';
+  // Always use the shared volume path
+  const profilePath = process.env.CHROME_USER_PROFILE || '/shared/browser-sessions/okta-session';
 
   log("🧪 OKTA-Prod-Login starting...");
   log(`👁 VISUAL_BROWSER = ${visual}`);
