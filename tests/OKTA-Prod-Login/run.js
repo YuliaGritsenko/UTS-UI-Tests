@@ -1,3 +1,4 @@
+const fs = require("fs");
 const { Builder, By } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 
@@ -29,6 +30,13 @@ function log(msg) {
       .usingServer(seleniumUrl)
       .build();
 
+    // 🟢 Check if profile dir exists right after browser start
+    if (fs.existsSync(profilePath)) {
+      log(`✅ Chrome profile/session directory exists at ${profilePath}.`);
+    } else {
+      log(`❌ Chrome profile/session directory NOT found at ${profilePath} after browser start!`);
+    }
+
     await driver.manage().setTimeouts({
       implicit: 0,
       pageLoad: 60000,
@@ -57,6 +65,14 @@ function log(msg) {
     }
 
     process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
+
+    // 🟢 Check again on failure
+    if (fs.existsSync(profilePath)) {
+      log(`(post-fail) ✅ Chrome profile/session directory exists at ${profilePath}.`);
+    } else {
+      log(`(post-fail) ❌ Chrome profile/session directory NOT found at ${profilePath}.`);
+    }
+
     process.exit(1);
 
   } catch (err) {
