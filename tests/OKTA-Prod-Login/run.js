@@ -17,11 +17,17 @@ async function waitForDir(path, maxWaitMs = 5000) {
 }
 
 (async function runLoginTest() {
+  log(`Node running as UID ${process.getuid?.()} GID ${process.getgid?.()}`);
+  log('Environment:');
+  log(JSON.stringify(process.env, null, 2));
+
   let driver;
   const timeoutMs = 60000;
   const pollInterval = 2000;
   const visual = process.env.VISUAL_BROWSER === "true";
-  const profilePath = process.env.CHROME_USER_PROFILE || "/tmp/okta-session";
+  // Try both /tmp and home directory
+  const defaultProfile = `/home/${process.env.USER || 'chrome'}/okta-session`;
+  const profilePath = process.env.CHROME_USER_PROFILE || defaultProfile;
 
   log("🧪 OKTA-Prod-Login starting...");
   log(`👁 VISUAL_BROWSER = ${visual}`);
@@ -43,12 +49,21 @@ async function waitForDir(path, maxWaitMs = 5000) {
     if (!visual) {
       options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
     }
+    log(`Chrome options: ${JSON.stringify(options.args)}`);
 
     driver = await new Builder()
       .forBrowser("chrome")
       .setChromeOptions(options)
       .usingServer(seleniumUrl)
       .build();
+
+    // Print Chrome version/UA
+    try {
+      const chromeVersion = await driver.executeScript('return navigator.userAgent;');
+      log(`Chrome version/UA: ${chromeVersion}`);
+    } catch (err) {
+      log(`(Could not get chrome version: ${err.message})`);
+    }
 
     await driver.manage().setTimeouts({
       implicit: 0,
@@ -59,7 +74,6 @@ async function waitForDir(path, maxWaitMs = 5000) {
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
 
-    // Now check for the profile directory, after navigation has occurred
     const found = await waitForDir(profilePath, 5000);
     if (found) {
       log(`✅ Chrome profile/session directory exists at ${profilePath} (after navigation).`);
@@ -86,7 +100,6 @@ async function waitForDir(path, maxWaitMs = 5000) {
     }
 
     process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
-    // One more check just before exit (for diagnostics)
     if (fs.existsSync(profilePath)) {
       log(`(post-fail) ✅ Chrome profile/session directory exists at ${profilePath}.`);
     } else {
