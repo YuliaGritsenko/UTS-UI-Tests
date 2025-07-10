@@ -7,7 +7,10 @@ const chrome = require("selenium-webdriver/chrome");
 
   const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
   // Always use the shared volume path
-  const profilePath = process.env.CHROME_USER_PROFILE || "/shared/browser-sessions/okta-session";
+  const profilePath = process.env.CHROME_USER_PROFILE;
+  if (!profilePath) {
+    throw new Error("CHROME_USER_PROFILE environment variable must be set!");
+  }
   const visual = process.env.VISUAL_BROWSER === "true";
 
   // Check if session/profile directory exists
