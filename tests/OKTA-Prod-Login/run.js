@@ -20,7 +20,17 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
     if (!visual) {
       options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
     }
-    log(`Chrome options: ${JSON.stringify(options.toJSON().args)}`);
+
+    // Robust Chrome option logging
+    try {
+      log(`Chrome options (args): ${JSON.stringify(options.args)}`);
+    } catch (e) {}
+    try {
+      log(`Chrome options (options_): ${JSON.stringify(options.options_)}`);
+    } catch (e) {}
+    try {
+      log(`Chrome options: ${options}`);
+    } catch (e) {}
 
     const driver = await new Builder()
       .forBrowser("chrome")
@@ -28,6 +38,7 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
       .usingServer(seleniumUrl)
       .build();
 
+    // Print Chrome version/UA
     try {
       const chromeVersion = await driver.executeScript('return navigator.userAgent;');
       log(`Chrome version/UA: ${chromeVersion}`);
