@@ -1,4 +1,4 @@
-// run.js in OKTA-Prod-Login-Finish
+const fs = require("fs");
 const { Builder } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 
@@ -9,18 +9,31 @@ const chrome = require("selenium-webdriver/chrome");
   const profilePath = process.env.CHROME_USER_PROFILE || "/tmp/okta-session";
   const visual = process.env.VISUAL_BROWSER === "true";
 
-  const options = new chrome.Options().addArguments(`--user-data-dir=${profilePath}`);
-  if (!visual) {
-    options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
+  // Check if session/profile directory exists
+  if (!fs.existsSync(profilePath)) {
+    console.log(`⚠️  No session/profile found at ${profilePath}. Nothing to close.`);
+    process.exit(0);
+  } else {
+    console.log(`🔑 Found Chrome profile/session at ${profilePath}. Attempting to close browser...`);
   }
 
-  const driver = await new Builder()
-    .forBrowser("chrome")
-    .setChromeOptions(options)
-    .usingServer(seleniumUrl)
-    .build();
+  try {
+    const options = new chrome.Options().addArguments(`--user-data-dir=${profilePath}`);
+    if (!visual) {
+      options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
+    }
 
-  await driver.quit();
-  console.log("✅ Browser session closed by OKTA-Prod-Login-Finish.");
-  process.exit(0);
+    const driver = await new Builder()
+      .forBrowser("chrome")
+      .setChromeOptions(options)
+      .usingServer(seleniumUrl)
+      .build();
+
+    await driver.quit();
+    console.log("✅ Browser session closed by OKTA-Prod-Login-Finish.");
+    process.exit(0);
+  } catch (err) {
+    console.error("❌ Error closing browser session:", err);
+    process.exit(1);
+  }
 })();
