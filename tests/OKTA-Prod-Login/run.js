@@ -1,6 +1,5 @@
 const { Builder, By } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
-
 function log(msg) { process.stdout.write(`${msg}\n`); }
 
 (async function runLoginTest() {
@@ -8,9 +7,6 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
   log('Environment:');
   log(JSON.stringify(process.env, null, 2));
 
-  let driver;
-  const timeoutMs = 60000;
-  const pollInterval = 2000;
   const visual = process.env.VISUAL_BROWSER === "true";
   const profilePath = process.env.CHROME_USER_PROFILE || '/tmp/okta-session';
 
@@ -24,15 +20,14 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
     if (!visual) {
       options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
     }
-    log(`Chrome options: ${JSON.stringify(options.getArguments())}`);
+    log(`Chrome options: ${JSON.stringify(options.toJSON().args)}`);
 
-    driver = await new Builder()
+    const driver = await new Builder()
       .forBrowser("chrome")
       .setChromeOptions(options)
       .usingServer(seleniumUrl)
       .build();
 
-    // Print Chrome version/UA
     try {
       const chromeVersion = await driver.executeScript('return navigator.userAgent;');
       log(`Chrome version/UA: ${chromeVersion}`);
@@ -49,6 +44,8 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
 
+    const timeoutMs = 60000;
+    const pollInterval = 2000;
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {
