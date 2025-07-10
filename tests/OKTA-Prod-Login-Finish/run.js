@@ -6,7 +6,8 @@ const chrome = require("selenium-webdriver/chrome");
   console.log("🧼 OKTA-Prod-Login-Finish — closing session...");
 
   const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
-  const profilePath = process.env.CHROME_USER_PROFILE || "/tmp/okta-session";
+  // Always use the shared volume path
+  const profilePath = process.env.CHROME_USER_PROFILE || "/shared/browser-sessions/okta-session";
   const visual = process.env.VISUAL_BROWSER === "true";
 
   // Check if session/profile directory exists
