@@ -6,7 +6,6 @@ function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
 
-// Utility: wait for a file/dir to exist, polling up to maxWaitMs
 async function waitForDir(path, maxWaitMs = 5000) {
   const interval = 100;
   const maxTries = Math.ceil(maxWaitMs / interval);
@@ -51,15 +50,6 @@ async function waitForDir(path, maxWaitMs = 5000) {
       .usingServer(seleniumUrl)
       .build();
 
-    // Wait for profile dir to appear, up to 5s
-    const found = await waitForDir(profilePath, 5000);
-    if (found) {
-      log(`✅ Chrome profile/session directory exists at ${profilePath}.`);
-    } else {
-      log(`❌ Chrome profile/session directory NOT found at ${profilePath} within 5s after browser start!`);
-      // This is an error, but still proceed to login logic for debugging.
-    }
-
     await driver.manage().setTimeouts({
       implicit: 0,
       pageLoad: 60000,
@@ -68,6 +58,14 @@ async function waitForDir(path, maxWaitMs = 5000) {
 
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
+
+    // Now check for the profile directory, after navigation has occurred
+    const found = await waitForDir(profilePath, 5000);
+    if (found) {
+      log(`✅ Chrome profile/session directory exists at ${profilePath} (after navigation).`);
+    } else {
+      log(`❌ Chrome profile/session directory NOT found at ${profilePath} even after navigation and 5s wait!`);
+    }
 
     const start = Date.now();
 
