@@ -1,20 +1,7 @@
-const fs = require("fs");
 const { Builder, By } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 
-function log(msg) {
-  process.stdout.write(`${msg}\n`);
-}
-
-async function waitForDir(path, maxWaitMs = 5000) {
-  const interval = 100;
-  const maxTries = Math.ceil(maxWaitMs / interval);
-  for (let i = 0; i < maxTries; ++i) {
-    if (fs.existsSync(path)) return true;
-    await new Promise(res => setTimeout(res, interval));
-  }
-  return false;
-}
+function log(msg) { process.stdout.write(`${msg}\n`); }
 
 (async function runLoginTest() {
   log(`Node running as UID ${process.getuid?.()} GID ${process.getgid?.()}`);
@@ -25,23 +12,11 @@ async function waitForDir(path, maxWaitMs = 5000) {
   const timeoutMs = 60000;
   const pollInterval = 2000;
   const visual = process.env.VISUAL_BROWSER === "true";
-  // Try both /tmp and home directory
-  const defaultProfile = `/home/${process.env.USER || 'chrome'}/okta-session`;
-  const profilePath = process.env.CHROME_USER_PROFILE || defaultProfile;
+  const profilePath = process.env.CHROME_USER_PROFILE || '/tmp/okta-session';
 
   log("🧪 OKTA-Prod-Login starting...");
   log(`👁 VISUAL_BROWSER = ${visual}`);
   log(`🗂 Using Chrome profile: ${profilePath}`);
-
-  // Clean up any old session
-  try {
-    if (fs.existsSync(profilePath)) {
-      fs.rmSync(profilePath, { recursive: true, force: true });
-      log(`🧹 Deleted previous session dir: ${profilePath}`);
-    }
-  } catch (err) {
-    log(`⚠️ Could not clean old session: ${err.message}`);
-  }
 
   try {
     const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
@@ -49,7 +24,7 @@ async function waitForDir(path, maxWaitMs = 5000) {
     if (!visual) {
       options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
     }
-    log(`Chrome options: ${JSON.stringify(options.args)}`);
+    log(`Chrome options: ${JSON.stringify(options.getArguments())}`);
 
     driver = await new Builder()
       .forBrowser("chrome")
@@ -74,13 +49,6 @@ async function waitForDir(path, maxWaitMs = 5000) {
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
 
-    const found = await waitForDir(profilePath, 5000);
-    if (found) {
-      log(`✅ Chrome profile/session directory exists at ${profilePath} (after navigation).`);
-    } else {
-      log(`❌ Chrome profile/session directory NOT found at ${profilePath} even after navigation and 5s wait!`);
-    }
-
     const start = Date.now();
 
     while (Date.now() - start < timeoutMs) {
@@ -100,12 +68,6 @@ async function waitForDir(path, maxWaitMs = 5000) {
     }
 
     process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
-    if (fs.existsSync(profilePath)) {
-      log(`(post-fail) ✅ Chrome profile/session directory exists at ${profilePath}.`);
-    } else {
-      log(`(post-fail) ❌ Chrome profile/session directory NOT found at ${profilePath}.`);
-    }
-
     process.exit(1);
 
   } catch (err) {
