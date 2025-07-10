@@ -6,6 +6,17 @@ function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
 
+// Utility: wait for a file/dir to exist, polling up to maxWaitMs
+async function waitForDir(path, maxWaitMs = 5000) {
+  const interval = 100;
+  const maxTries = Math.ceil(maxWaitMs / interval);
+  for (let i = 0; i < maxTries; ++i) {
+    if (fs.existsSync(path)) return true;
+    await new Promise(res => setTimeout(res, interval));
+  }
+  return false;
+}
+
 (async function runLoginTest() {
   let driver;
   const timeoutMs = 60000;
@@ -16,6 +27,16 @@ function log(msg) {
   log("🧪 OKTA-Prod-Login starting...");
   log(`👁 VISUAL_BROWSER = ${visual}`);
   log(`🗂 Using Chrome profile: ${profilePath}`);
+
+  // Clean up any old session
+  try {
+    if (fs.existsSync(profilePath)) {
+      fs.rmSync(profilePath, { recursive: true, force: true });
+      log(`🧹 Deleted previous session dir: ${profilePath}`);
+    }
+  } catch (err) {
+    log(`⚠️ Could not clean old session: ${err.message}`);
+  }
 
   try {
     const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
@@ -30,11 +51,13 @@ function log(msg) {
       .usingServer(seleniumUrl)
       .build();
 
-    // 🟢 Check if profile dir exists right after browser start
-    if (fs.existsSync(profilePath)) {
+    // Wait for profile dir to appear, up to 5s
+    const found = await waitForDir(profilePath, 5000);
+    if (found) {
       log(`✅ Chrome profile/session directory exists at ${profilePath}.`);
     } else {
-      log(`❌ Chrome profile/session directory NOT found at ${profilePath} after browser start!`);
+      log(`❌ Chrome profile/session directory NOT found at ${profilePath} within 5s after browser start!`);
+      // This is an error, but still proceed to login logic for debugging.
     }
 
     await driver.manage().setTimeouts({
@@ -65,8 +88,7 @@ function log(msg) {
     }
 
     process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
-
-    // 🟢 Check again on failure
+    // One more check just before exit (for diagnostics)
     if (fs.existsSync(profilePath)) {
       log(`(post-fail) ✅ Chrome profile/session directory exists at ${profilePath}.`);
     } else {
@@ -79,6 +101,4 @@ function log(msg) {
     process.stderr.write(`🔥 Fatal error: ${err.message}\n`);
     process.exit(1);
   }
-
-  // 🟡 No .quit() or process.exit(0) so future tests can reuse the session
 })();
