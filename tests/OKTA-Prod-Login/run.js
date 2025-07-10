@@ -3,6 +3,11 @@ const chrome = require("selenium-webdriver/chrome");
 function log(msg) { process.stdout.write(`${msg}\n`); }
 
 (async function runLoginTest() {
+
+  // Place this at the top of your main function:
+  log("DEBUG: env CHROME_USER_PROFILE = ", process.env.CHROME_USER_PROFILE);
+  const profilePath = process.env.CHROME_USER_PROFILE || '/shared/browser-sessions/okta-session';
+  log("DEBUG: using profilePath = ", profilePath);
   log(`Node running as UID ${process.getuid?.()} GID ${process.getgid?.()}`);
   log('Environment:');
   log(JSON.stringify(process.env, null, 2));
