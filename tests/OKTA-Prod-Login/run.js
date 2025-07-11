@@ -41,10 +41,11 @@ function log(msg) { process.stdout.write(`${msg}\n`); }
       log(`Chrome options: ${options}`);
     } catch (e) {}
 
+    options.options_["debuggerAddress"] = "selenium:9222";
+    
     const driver = await new Builder()
       .forBrowser("chrome")
       .setChromeOptions(options)
-      .usingServer(seleniumUrl)
       .build();
 
     // Print Chrome version/UA
