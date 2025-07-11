@@ -1,9 +1,7 @@
 const { Builder, By } = require("selenium-webdriver");
 const chrome = require("selenium-webdriver/chrome");
 
-function log(msg) {
-  process.stdout.write(`${msg}\n`);
-}
+const log = (msg) => process.stdout.write(`${msg}\n`);
 
 (async function runLoginTest() {
   const profilePath = process.env.CHROME_USER_PROFILE || '/shared/browser-sessions/okta-session';
@@ -12,6 +10,7 @@ function log(msg) {
   log("🧪 OKTA-Prod-Login starting...");
   log(`CHROME_USER_PROFILE: ${profilePath}`);
   log(`VISUAL_BROWSER: ${visual}`);
+
   try {
     const options = new chrome.Options();
     options.addArguments(`--user-data-dir=${profilePath}`);
@@ -19,27 +18,19 @@ function log(msg) {
       options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
     }
 
-    // 🧠 Connect to the long-running Chrome instance
-    options.options_["debuggerAddress"] = "selenium:9222";
+    const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://selenium:4444/wd/hub";
 
     const driver = await new Builder()
       .forBrowser("chrome")
       .setChromeOptions(options)
+      .usingServer(seleniumUrl)
       .build();
 
-    // Optional: log UA
-    try {
-      const chromeVersion = await driver.executeScript('return navigator.userAgent;');
-      log(`Chrome version/UA: ${chromeVersion}`);
-    } catch (err) {
-      log(`(Could not get chrome version: ${err.message})`);
-    }
+    await driver.manage().setTimeouts({ script: 30000, pageLoad: 60000 });
 
-    // Load login page
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
 
-    // Wait for successful login (detect UTS logo)
     const timeoutMs = 60000;
     const pollInterval = 2000;
     const start = Date.now();
@@ -49,7 +40,7 @@ function log(msg) {
       try {
         const logoElements = await driver.findElements(By.css('img.logo[alt="University of Technology Sydney logo"]'));
         if (logoElements.length > 0) {
-          log("✅ Login successful: UTS logo detected.");
+          log("✅ Login successful!");
           if (visual) await driver.sleep(3000);
           return;
         }
@@ -59,7 +50,7 @@ function log(msg) {
       await driver.sleep(pollInterval);
     }
 
-    process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
+    process.stderr.write("❌ Login failed: UTS logo not detected after timeout.\n");
     process.exit(1);
   } catch (err) {
     process.stderr.write(`🔥 Fatal error: ${err.message}\n`);
