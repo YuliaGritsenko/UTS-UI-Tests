@@ -1,66 +1,38 @@
 const fs = require("fs");
-const { Builder } = require("selenium-webdriver");
-const chrome = require("selenium-webdriver/chrome");
-function log(msg) { process.stdout.write(`${msg}\n`); }
+const { execSync } = require("child_process");
+const path = require("path");
 
-(async function closeSession() {
-  console.log("🧼 OKTA-Prod-Login-Finish — closing session...");
+(async function finishLoginSession() {
+  console.log("🧼 OKTA-Prod-Login-Finish — cleaning up session...");
 
-  const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
   const profilePath = process.env.CHROME_USER_PROFILE;
   if (!profilePath) {
-    console.error("❌ CHROME_USER_PROFILE not set. Cannot close session.");
+    console.error("❌ CHROME_USER_PROFILE not set");
     process.exit(1);
   }
 
-  const visual = process.env.VISUAL_BROWSER === "true";
-
-  // Check if the profile directory exists
   if (!fs.existsSync(profilePath)) {
-    console.log(`⚠️  No profile at ${profilePath}. Nothing to close.`);
+    console.log(`⚠️  No session profile at ${profilePath}. Nothing to clean.`);
     process.exit(0);
   }
 
-  console.log(`🔑 Found Chrome profile/session at ${profilePath}. Attempting to close browser...`);
-  let driver;
   try {
-    const options = new chrome.Options().addArguments(`--user-data-dir=${profilePath}`);
-
-    if (!visual) {
-      options.addArguments(
-        "--headless=new",
-        "--disable-gpu",
-        "--no-sandbox",
-        "--window-size=1920,1080"
-      );
-    }
-
-    driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(options)
-      .usingServer(seleniumUrl)
-      .build();
-
-    // ⏳ Force Chrome to load something very light
-    await driver.get("about:blank");
-
-    // ⏱ Optional wait (especially useful in visual mode to let profile stabilize)
-    if (visual) {
-      await driver.sleep(1000);
-    }
-
-    await driver.quit();
-    console.log("✅ Browser session closed by OKTA-Prod-Login-Finish.");
-    process.exit(0);
+    console.log("🔍 Looking for Chrome processes with this profile...");
+    // Kill all chrome processes using this profile (rough match)
+    execSync(`pkill -f "chrome.*user-data-dir=${profilePath}"`);
+    console.log("✅ Chrome processes terminated.");
   } catch (err) {
-    console.error("❌ Error closing browser session:", err.message);
-    if (driver) {
-      try {
-        await driver.quit();
-      } catch (e2) {
-        console.error("⚠️ Failed to force quit driver:", e2.message);
-      }
-    }
-    process.exit(1);
+    console.warn("⚠️ No matching chrome processes found or pkill failed:", err.message);
   }
+
+  try {
+    // Optional: Remove session folder
+    fs.rmSync(profilePath, { recursive: true, force: true });
+    console.log(`🧹 Deleted profile directory: ${profilePath}`);
+  } catch (err) {
+    console.warn("⚠️ Failed to delete profile folder:", err.message);
+  }
+
+  console.log("✅ OKTA session cleanup complete.");
+  process.exit(0);
 })();
