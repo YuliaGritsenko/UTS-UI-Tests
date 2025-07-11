@@ -5,15 +5,16 @@ const fs = require("fs");
   const profilePath = process.env.CHROME_USER_PROFILE;
   console.log("🧼 OKTA-Prod-Login-Finish — cleaning up Chrome session...");
 
+  // Kill Chrome processes via docker exec
   try {
-    execSync("docker exec selenium pkill -f chrome");
+    execSync("docker exec selenium pkill -f chrome", { stdio: "inherit" });
     console.log("✅ Chrome process terminated inside selenium container.");
   } catch (err) {
     console.warn("⚠️ Failed to kill Chrome (maybe already closed):", err.message);
   }
 
-  // Optional: cleanup profile directory if needed
-  if (fs.existsSync(profilePath)) {
+  // Optional: delete login session/profile folder
+  if (profilePath && fs.existsSync(profilePath)) {
     try {
       fs.rmSync(profilePath, { recursive: true, force: true });
       console.log("🧹 Deleted Chrome user profile at:", profilePath);
