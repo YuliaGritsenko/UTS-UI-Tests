@@ -48,11 +48,11 @@ module.exports = async function(driver, parameters = {}) {
       log("🏁 Test finished successfully.");
     }
 
-    Optionally: close the tab we just made and switch back (if wanted):
+    //Optionally: close the tab we just made and switch back (if wanted):
     await driver.close();
     await driver.switchTo().window(handles[0]);
 
-    Always return cleanly
+    //Always return cleanly
     return;
 
   } catch (err) {
