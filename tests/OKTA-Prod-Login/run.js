@@ -43,7 +43,7 @@ function log(msg) {
     while (Date.now() - start < timeoutMs) {
       log("⏳ Waiting for user login...");
       try {
-        const searchInputs = await driver.findElements(By.id("dashboard-search-input"));
+        const logoElements = await driver.findElements(By.css('img.logo[alt="University of Technology Sydney logo"]'));
         if (logoElements.length > 0) {
           log("✅ Login successful: UTS logo detected.");
           if (visual) await driver.sleep(3000);
