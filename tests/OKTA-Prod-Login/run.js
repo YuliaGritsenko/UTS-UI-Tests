@@ -11,7 +11,6 @@ function log(msg) {
   const pollInterval = 2000;
   const visual = process.env.VISUAL_BROWSER === "true";
   const profilePath = process.env.CHROME_USER_PROFILE || "/tmp/okta-session";
-
   log("🧪 OKTA-Prod-Login starting...");
   log(`👁 VISUAL_BROWSER = ${visual}`);
   log(`🗂 Using Chrome profile: ${profilePath}`);
@@ -22,32 +21,27 @@ function log(msg) {
     if (!visual) {
       options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
     }
-
     driver = await new Builder()
       .forBrowser("chrome")
       .setChromeOptions(options)
       .usingServer(seleniumUrl)
       .build();
-
     await driver.manage().setTimeouts({
       implicit: 0,
       pageLoad: 60000,
       script: 30000,
     });
-
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
-
     const start = Date.now();
-
     while (Date.now() - start < timeoutMs) {
-      log("⏳ Waiting for user login...");
+      log("⏳ Waiting for dashboard-search-input...");
       try {
-        const logoElements = await driver.findElements(By.css('img.logo[alt="University of Technology Sydney logo"]'));
-        if (logoElements.length > 0) {
-          log("✅ Login successful: UTS logo detected.");
+        const searchInputs = await driver.findElements(By.id("dashboard-search-input"));
+        if (searchInputs.length > 0) {
+          log("✅ Login successful: dashboard search input detected.");
           if (visual) await driver.sleep(3000);
-          // 🛑 Do NOT quit driver — keep session open for next test
+          // 🛑 Success, do NOT quit browser so session continues for sequence
           return;
         }
       } catch (err) {
@@ -55,14 +49,14 @@ function log(msg) {
       }
       await driver.sleep(pollInterval);
     }
-
-    process.stderr.write("❌ Login failed: UTS logo not detected after retrying.\n");
+    // --- FAIL: timed out ---
+    process.stderr.write("❌ Login failed: dashboard search input not detected after retrying.\n");
+    if (driver) await driver.quit();
     process.exit(1);
-
   } catch (err) {
     process.stderr.write(`🔥 Fatal error: ${err.message}\n`);
+    if (driver) await driver.quit();
     process.exit(1);
   }
-
-  // 🟡 No .quit() or process.exit(0) so future tests can reuse the session
+  // (No automatic .quit or exit(0) here on manual success.)
 })();
