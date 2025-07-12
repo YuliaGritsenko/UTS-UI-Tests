@@ -5,8 +5,7 @@ function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
 
-(async function runLoginTest() {
-  let driver;
+module.exports = async function(driver, parameters = {}) {
   const timeoutMs = 60000;
   const pollInterval = 2000;
   const visual = process.env.VISUAL_BROWSER === "true";
@@ -15,22 +14,33 @@ function log(msg) {
   log(`👁 VISUAL_BROWSER = ${visual}`);
   log(`🗂 Using Chrome profile: ${profilePath}`);
 
-  try {
-    const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
-    const options = new chrome.Options().addArguments(`--user-data-dir=${profilePath}`);
-    if (!visual) {
-      options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
+  if (!driver) {
+    // If no driver passed in, create one (single-test mode maybe)
+    try {
+      const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
+      const options = new chrome.Options().addArguments(`--user-data-dir=${profilePath}`);
+      if (!visual) {
+        options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
+      }
+      driver = await new Builder()
+        .forBrowser("chrome")
+        .setChromeOptions(options)
+        .usingServer(seleniumUrl)
+        .build();
+      await driver.manage().setTimeouts({
+        implicit: 0,
+        pageLoad: 60000,
+        script: 30000,
+      });
+      parameters.__auto_quit = true; // marker for single-test run
+    } catch (err) {
+      process.stderr.write(`🔥 Fatal error starting driver: ${err.message}\n`);
+      if (driver) await driver.quit();
+      process.exit(1);
     }
-    driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(options)
-      .usingServer(seleniumUrl)
-      .build();
-    await driver.manage().setTimeouts({
-      implicit: 0,
-      pageLoad: 60000,
-      script: 30000,
-    });
+  }
+
+  try {
     log("🌐 Navigating to https://login.uts.edu.au...");
     await driver.get("https://login.uts.edu.au");
     const start = Date.now();
@@ -42,6 +52,7 @@ function log(msg) {
           log("✅ Login successful: dashboard search input detected.");
           if (visual) await driver.sleep(3000);
           // 🛑 Success, do NOT quit browser so session continues for sequence
+          if (parameters.__auto_quit) await driver.quit();
           return;
         }
       } catch (err) {
@@ -49,7 +60,6 @@ function log(msg) {
       }
       await driver.sleep(pollInterval);
     }
-    // --- FAIL: timed out ---
     process.stderr.write("❌ Login failed: dashboard search input not detected after retrying.\n");
     if (driver) await driver.quit();
     process.exit(1);
@@ -58,5 +68,4 @@ function log(msg) {
     if (driver) await driver.quit();
     process.exit(1);
   }
-  // (No automatic .quit or exit(0) here on manual success.)
-})();
+};
