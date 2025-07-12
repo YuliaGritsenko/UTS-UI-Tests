@@ -45,7 +45,7 @@ module.exports = async function(driver, parameters = {}) {
     await driver.get("https://login.uts.edu.au");
     const start = Date.now();
     while (Date.now() - start < timeoutMs) {
-      log("⏳ Waiting for dashboard-search-input...");
+      log("⏳ Waiting for User login...");
       try {
         const searchInputs = await driver.findElements(By.id("dashboard-search-input"));
         if (searchInputs.length > 0) {
