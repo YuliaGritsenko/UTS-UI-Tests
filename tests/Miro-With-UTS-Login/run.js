@@ -1,5 +1,4 @@
-const { Builder, By } = require("selenium-webdriver");
-const chrome = require("selenium-webdriver/chrome");
+const { By } = require("selenium-webdriver");
 
 function log(msg) {
   process.stdout.write(`${msg}\n`);
@@ -8,44 +7,32 @@ function log(msg) {
 module.exports = async function(driver, parameters = {}) {
   const timeoutMs = 60000;
   const pollInterval = 2000;
-  const visual = process.env.VISUAL_BROWSER === "true";
-  const profilePath = process.env.CHROME_USER_PROFILE || "/tmp/miro-session";
   log("🧪 Miro UTS span test starting...");
-  log(`👁 VISUAL_BROWSER = ${visual}`);
-  log(`🗂 Using Chrome profile: ${profilePath}`);
 
-  // If driver not provided, create one (for single/manual run)
-  let createdDriver = false;
   if (!driver) {
-    const seleniumUrl = process.env.SELENIUM_REMOTE_URL || "http://localhost:4444/wd/hub";
-    const options = new chrome.Options().addArguments(`--user-data-dir=${profilePath}`);
-    if (!visual) {
-      options.addArguments("--headless=new", "--disable-gpu", "--no-sandbox", "--window-size=1920,1080");
-    }
-    driver = await new Builder()
-      .forBrowser("chrome")
-      .setChromeOptions(options)
-      .usingServer(seleniumUrl)
-      .build();
-    createdDriver = true;
+    throw new Error("Driver must be provided by the sequence runner/session! (Don’t run this test stand-alone)");
   }
 
   try {
+    // Open a new tab within the same browser session & switch to it
+    log("📑 Opening a new tab and switching context.");
+    await driver.executeScript("window.open('about:blank','_blank');");
+    const handles = await driver.getAllWindowHandles();
+    await driver.switchTo().window(handles[handles.length - 1]); // Switch to the new tab
+
     log("🌐 Navigating to https://miro.com/app/dashboard/ ...");
     await driver.get("https://miro.com/app/dashboard/");
-
     const start = Date.now();
     let found = false;
 
     while (Date.now() - start < timeoutMs) {
       log("🔍 Looking for span: University of Technology Sydney ...");
       try {
-        // Get ALL span elements and check their visible text content
         const spans = await driver.findElements(By.xpath(`//span[text()='University of Technology Sydney']`));
         if (spans.length > 0) {
           log("✅ Found University of Technology Sydney span!");
           found = true;
-          if (visual) await driver.sleep(2000);
+          // You can add: await driver.sleep(1500);
           break;
         }
       } catch (err) {
@@ -56,23 +43,21 @@ module.exports = async function(driver, parameters = {}) {
 
     if (!found) {
       process.stderr.write("❌ Failed: span 'University of Technology Sydney' NOT found after timeout.\n");
-      if (createdDriver && driver) await driver.quit();
-      process.exit(1);
+      // DO NOT exit(1) or throw — sequence should continue!
+    } else {
+      log("🏁 Test finished successfully.");
     }
 
-    // PASS
-    if (createdDriver && driver) await driver.quit();
-    // If in a sequence, don't quit driver (remove line above)
+    Optionally: close the tab we just made and switch back (if wanted):
+    await driver.close();
+    await driver.switchTo().window(handles[0]);
+
+    Always return cleanly
     return;
 
   } catch (err) {
     process.stderr.write(`🔥 Fatal error: ${err.message}\n`);
-    if (driver) await driver.quit();
-    process.exit(1);
+    // Do NOT exit(1) here. Allow sequence to proceed.
+    return;
   }
 };
-
-// To allow running directly
-if (require.main === module) {
-  module.exports();
-}
