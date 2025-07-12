@@ -21,7 +21,7 @@ module.exports = async function(driver, parameters = {}) {
     await driver.switchTo().window(handles[handles.length - 1]); // Switch to the new tab
 
     log("🌐 Navigating to https://miro.com/app/dashboard/ ...");
-    await driver.get("https://miro.com/app/dashboard/");
+    await driver.get("https://login.uts.edu.au/home/bookmark/0oa47kqefaOdZ1ie83l7/2557");
     const start = Date.now();
     let found = false;
 
