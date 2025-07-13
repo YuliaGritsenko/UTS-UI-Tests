@@ -1,48 +1,57 @@
-const { logging } = require('selenium-webdriver');
+const { By, until } = require("selenium-webdriver");
 function log(msg) { process.stdout.write(`${msg}\n`); }
 
 module.exports = async function(driver, parameters = {}) {
-  const whatToSay = parameters.whatToSay;
+  const whatToSay = parameters.whatToSay || "Hi My Name Is Andrew!!";
   log("🟠 Received parameters:");
   for (const [key, value] of Object.entries(parameters)) {
     log(`• ${key}: ${JSON.stringify(value)}`);
   }
-  log(`🟡 Will console.log in browser: ${whatToSay}`);
+  log(`🟡 Will enter into textarea: ${whatToSay}`);
 
   try {
-    // 1. Go to a real page, not about:blank
-    await driver.get("https://example.com");
-    await driver.sleep(3000);
+    // 1. Go to Google Australia
+    log("🌏 Navigating to https://www.google.com.au/");
+    await driver.get("https://www.google.com.au/");
+    await driver.sleep(1500);
 
-    // 2. Inject log
-    await driver.executeScript(`console.log(${JSON.stringify(whatToSay)});`);
-    log("🧪 Ran console.log in browser.");
-    await driver.sleep(3000);
-
-    // 3. Get logs (must have been enabled at session creation)
-    let entries;
+    // 2. Handle consent - sometimes Google may show a consent dialog
     try {
-      entries = await driver.manage().logs().get(logging.Type.BROWSER);
-    } catch (err) {
-      process.stderr.write(`⚠️ Could not get browser log: ${err.message}\n`);
-      throw new Error("Could not get browser log!");
+      const agreeBtns = await driver.findElements(By.xpath("//button[.//div[contains(.,'Agree') or contains(.,'accept') or contains(.,'Accept')]]"));
+      if (agreeBtns.length > 0) {
+        log("⚠️ Clicking consent/agree button...");
+        await agreeBtns[0].click();
+        await driver.sleep(1200);
+      }
+    } catch (e) { /* ignore */ }
+
+    // 3. Wait for search textarea
+    log("🔎 Waiting for search textarea...");
+    let textarea;
+    try {
+      textarea = await driver.wait(until.elementLocated(By.name("q")), 8000);
+      await driver.wait(until.elementIsVisible(textarea), 5000);
+    } catch (e) {
+      process.stderr.write("❌ FAIL: Search textarea not found or not visible.\n");
+      throw new Error("Google search textarea not found/visible");
     }
 
-    log("🟢 Browser console logs:");
-    for (const entry of entries) {
-      log(`[browser][${entry.level}] ${entry.message}`);
-    }
+    // 4. Type whatToSay param
+    await textarea.clear();
+    await textarea.sendKeys(whatToSay);
+    log("⌨️ Typed into textarea.");
+    await driver.sleep(600);
 
-    // 4. Check for our message as substring
-    const found = entries.some(entry =>
-      entry.message && entry.message.includes(whatToSay)
-    );
-    if (found) {
-      log("✅ PASS: Found message in browser console logs.");
+    // 5. Check value
+    const val = await textarea.getAttribute("value");
+    log(`🟢 Textarea value is now: ${val}`);
+
+    if (val === whatToSay) {
+      log("✅ PASS: Textarea contains the right value.");
       return;
     } else {
-      process.stderr.write(`❌ FAIL: Message wasn't found in browser console log!\n`);
-      throw new Error("Console log expected message NOT found.");
+      process.stderr.write(`❌ FAIL: Textarea does NOT contain the expected value!\n`);
+      throw new Error("Textarea does not contain the expected value.");
     }
   } catch (err) {
     process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
