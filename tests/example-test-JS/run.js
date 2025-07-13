@@ -14,7 +14,7 @@ module.exports = async function(driver, parameters = {}) {
     log("⚡ Waiting for browser page to be ready...");
     // Optionally navigate to a known page and wait for dom if you want:
     // await driver.get('about:blank'); // Optional, uncomment if needed
-    await driver.sleep(2000);
+    await driver.sleep(4000);
 
     // 2. Console log in browser
     await driver.executeScript(`console.log(${JSON.stringify(whatToSay)});`);
