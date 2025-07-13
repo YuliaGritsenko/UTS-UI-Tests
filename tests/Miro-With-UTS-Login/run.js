@@ -5,7 +5,7 @@ function log(msg) {
 }
 
 module.exports = async function(driver, parameters = {}) {
-  const timeoutMs = 10000;
+  const timeoutMs = 10000; // 10 seconds
   const pollInterval = 2000;
   log("🧪 Miro UTS span test starting...");
 
@@ -13,51 +13,63 @@ module.exports = async function(driver, parameters = {}) {
     throw new Error("Driver must be provided by the sequence runner/session! (Don’t run this test stand-alone)");
   }
 
+  let handles = [];
   try {
-    // Open a new tab within the same browser session & switch to it
+    // Open new tab, switch to it
     log("📑 Opening a new tab and switching context.");
     await driver.executeScript("window.open('about:blank','_blank');");
-    const handles = await driver.getAllWindowHandles();
-    await driver.switchTo().window(handles[handles.length - 1]); // Switch to the new tab
+    handles = await driver.getAllWindowHandles();
+    const newTabHandle = handles[handles.length - 1];
+    await driver.switchTo().window(newTabHandle);
 
-    log("🌐 Navigating to https://miro.com/app/dashboard/ ...");
+    log("🌐 Navigating to https://login.uts.edu.au/home/bookmark/0oa47kqefaOdZ1ie83l7/2557 ...");
     await driver.get("https://login.uts.edu.au/home/bookmark/0oa47kqefaOdZ1ie83l7/2557");
+
     const start = Date.now();
     let found = false;
 
     while (Date.now() - start < timeoutMs) {
       log("🔍 Looking for span: University of Technology Sydney ...");
       try {
-        const spans = await driver.findElements(By.xpath(`//span[text()='University of Technology Sydney']`));
+        const spans = await driver.findElements(
+          By.xpath(`//span[text()='University of Technology Sydney']`)
+        );
         if (spans.length > 0) {
           log("✅ Found University of Technology Sydney span!");
           found = true;
-          // You can add: await driver.sleep(1500);
           break;
         }
       } catch (err) {
-        process.stderr.write(`⚠️ Poll error: ${err.message}\n`);
+        process.stderr.write(`⚠️ Poll error: ${err && err.message}\n`);
       }
       await driver.sleep(pollInterval);
     }
 
     if (!found) {
       process.stderr.write("❌ Failed: span 'University of Technology Sydney' NOT found after timeout.\n");
-      // DO NOT exit(1) or throw — sequence should continue!
     } else {
       log("🏁 Test finished successfully.");
     }
 
-    //Optionally: close the tab we just made and switch back (if wanted):
-    await driver.close();
-    await driver.switchTo().window(handles[0]);
-
-    //Always return cleanly
+    // Clean up: close new tab, return to original tab
+    if (handles.length > 1) {
+      await driver.close();
+      await driver.switchTo().window(handles[0]);
+    }
     return;
 
   } catch (err) {
-    process.stderr.write(`🔥 Fatal error: ${err.message}\n`);
-    // Do NOT exit(1) here. Allow sequence to proceed.
+    process.stderr.write(`🔥 Fatal error: ${err && err.message}\n`);
+    // Attempt to close tab and switch back
+    try {
+      handles = handles.length ? handles : await driver.getAllWindowHandles();
+      if (handles.length > 1) {
+        await driver.close();
+        await driver.switchTo().window(handles[0]);
+      }
+    } catch (err2) {
+      process.stderr.write(`⚠️ Failed to close tab or switch back: ${err2 && err2.message}\n`);
+    }
     return;
   }
 };
