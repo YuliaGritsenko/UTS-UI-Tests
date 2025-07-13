@@ -2,13 +2,12 @@ const { By } = require("selenium-webdriver");
 function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
-
-module.exports = async function(driver, parameters = {}) {
+module.exports = async function (driver, parameters = {}) {
   const timeoutMs = 10000; // 10 seconds
   const pollInterval = 2000;
   log("🧪 Miro UTS span test starting...");
   if (!driver) {
-    throw new Error("Driver must be provided by the sequence runner/session! (Don’t run this test stand-alone)");
+    throw new Error("Driver must be provided by the sequence runner/session!");
   }
   let handles = [];
   try {
@@ -40,11 +39,13 @@ module.exports = async function(driver, parameters = {}) {
       }
       await driver.sleep(pollInterval);
     }
-    // Clean up: close new tab, return to original tab
+
+    // Clean up: close new tab, return to original tab (not strictly necessary for isolation, but still polite)
     if (handles.length > 1) {
       await driver.close();
       await driver.switchTo().window(handles[0]);
     }
+
     if (!found) {
       process.stderr.write("❌ Failed: span 'University of Technology Sydney' NOT found after timeout.\n");
       throw new Error("Failed: span 'University of Technology Sydney' NOT found after timeout.");
@@ -54,7 +55,7 @@ module.exports = async function(driver, parameters = {}) {
     return;
   } catch (err) {
     process.stderr.write(`🔥 Fatal error: ${err && err.message}\n`);
-    // Attempt to close tab and switch back
+    // Cleanup tab if possible (routine: not session-protecting, just good form)
     try {
       handles = handles.length ? handles : await driver.getAllWindowHandles();
       if (handles.length > 1) {
