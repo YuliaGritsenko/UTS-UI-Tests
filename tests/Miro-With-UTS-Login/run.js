@@ -5,7 +5,7 @@ function log(msg) {
 }
 
 module.exports = async function(driver, parameters = {}) {
-  const timeoutMs = 60000;
+  const timeoutMs = 10000;
   const pollInterval = 2000;
   log("🧪 Miro UTS span test starting...");
 
