@@ -1,8 +1,15 @@
 const { By } = require("selenium-webdriver");
+
 function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
 
+/**
+ * Test: Looks for "University of Technology Sydney" span in UTS login page.
+ * Opens a new tab, waits up to 10s, reports result.
+ * @param {WebDriver} driver   - Provided by the sequence runner/session.
+ * @param {object}   parameters - (Not used)
+ */
 module.exports = async function(driver, parameters = {}) {
   const timeoutMs = 10000; // 10 seconds
   const pollInterval = 2000;
@@ -10,20 +17,28 @@ module.exports = async function(driver, parameters = {}) {
   if (!driver) {
     throw new Error("Driver must be provided by the sequence runner/session!");
   }
-  let handles = [];
+
+  let originalHandle;
+  let newTabHandle;
+  let found = false;
+
   try {
+    // Record the original window
+    const startHandles = await driver.getAllWindowHandles();
+    originalHandle = startHandles[0];
+
     // Open new tab and switch context
     log("📑 Opening a new tab and switching context.");
     await driver.executeScript("window.open('about:blank','_blank');");
-    handles = await driver.getAllWindowHandles();
-    const newTabHandle = handles[handles.length - 1];
+    const handles = await driver.getAllWindowHandles();
+    newTabHandle = handles[handles.length - 1];
     await driver.switchTo().window(newTabHandle);
 
     log("🌐 Navigating to https://login.uts.edu.au/home/bookmark/0oa47kqefaOdZ1ie83l7/2557 ...");
     await driver.get("https://login.uts.edu.au/home/bookmark/0oa47kqefaOdZ1ie83l7/2557");
 
+    // Poll for span presence
     const start = Date.now();
-    let found = false;
     while (Date.now() - start < timeoutMs) {
       log("🔍 Looking for span: University of Technology Sydney ...");
       try {
@@ -41,12 +56,12 @@ module.exports = async function(driver, parameters = {}) {
       await driver.sleep(pollInterval);
     }
 
-    // Clean up: close tab, back to original
+    // Clean up: close new tab, back to original
     try {
-      handles = await driver.getAllWindowHandles();
-      if (handles.length > 1) {
-        await driver.close(); // closes current
-        await driver.switchTo().window(handles[0]);
+      const endHandles = await driver.getAllWindowHandles();
+      if (endHandles.length > 1 && newTabHandle) {
+        await driver.close(); // closes current (new) tab
+        await driver.switchTo().window(originalHandle);
       }
     } catch (err) {
       process.stderr.write(`⚠️ Cleanup after success: ${err && err.message}\n`);
@@ -60,12 +75,15 @@ module.exports = async function(driver, parameters = {}) {
     }
   } catch (err) {
     process.stderr.write(`🔥 Fatal error: ${err && err.message}\n`);
-    // Best effort cleanup if possible
+    // Cleanup even on error
     try {
-      handles = handles.length ? handles : await driver.getAllWindowHandles();
-      if (handles.length > 1) {
+      const handles = await driver.getAllWindowHandles();
+      if (handles.length > 1 && newTabHandle) {
+        await driver.switchTo().window(newTabHandle);
         await driver.close();
-        await driver.switchTo().window(handles[0]);
+      }
+      if (originalHandle) {
+        await driver.switchTo().window(originalHandle);
       }
     } catch (err2) {
       process.stderr.write(`⚠️ Failed to close tab or switch back: ${err2 && err2.message}\n`);
