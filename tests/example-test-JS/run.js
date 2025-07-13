@@ -11,6 +11,7 @@ module.exports = async function (driver, parameters = {}) {
     log(`• ${key}: ${JSON.stringify(value)}`);
   }
   log(`🟡 Will enter into textarea: ${whatToSay}`);
+
   try {
     // 1. Go to Google Australia
     log("🌏 Navigating to https://www.google.com.au/");
@@ -27,7 +28,7 @@ module.exports = async function (driver, parameters = {}) {
         await agreeBtns[0].click();
         await driver.sleep(1200);
       }
-    } catch (e) { /* ignore silently */ }
+    } catch (e) { /* Ignore consent errors */ }
 
     // 3. Wait for search textarea
     log("🔎 Waiting for search textarea...");
@@ -58,7 +59,7 @@ module.exports = async function (driver, parameters = {}) {
     }
   } catch (err) {
     process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
-    // No need for further cleanup here; driver quit is handled by the sequence runner
+    // No cleanup needed—test runner closes webdriver
     throw err;
   }
 };
