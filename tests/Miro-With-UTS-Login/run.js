@@ -2,7 +2,8 @@ const { By } = require("selenium-webdriver");
 function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
-module.exports = async function (driver, parameters = {}) {
+
+module.exports = async function(driver, parameters = {}) {
   const timeoutMs = 10000; // 10 seconds
   const pollInterval = 2000;
   log("🧪 Miro UTS span test starting...");
@@ -11,7 +12,7 @@ module.exports = async function (driver, parameters = {}) {
   }
   let handles = [];
   try {
-    // Open new tab, switch to it
+    // Open new tab and switch context
     log("📑 Opening a new tab and switching context.");
     await driver.executeScript("window.open('about:blank','_blank');");
     handles = await driver.getAllWindowHandles();
@@ -40,10 +41,15 @@ module.exports = async function (driver, parameters = {}) {
       await driver.sleep(pollInterval);
     }
 
-    // Clean up: close new tab, return to original tab (not strictly necessary for isolation, but still polite)
-    if (handles.length > 1) {
-      await driver.close();
-      await driver.switchTo().window(handles[0]);
+    // Clean up: close tab, back to original
+    try {
+      handles = await driver.getAllWindowHandles();
+      if (handles.length > 1) {
+        await driver.close(); // closes current
+        await driver.switchTo().window(handles[0]);
+      }
+    } catch (err) {
+      process.stderr.write(`⚠️ Cleanup after success: ${err && err.message}\n`);
     }
 
     if (!found) {
@@ -52,10 +58,9 @@ module.exports = async function (driver, parameters = {}) {
     } else {
       log("🏁 Test finished successfully.");
     }
-    return;
   } catch (err) {
     process.stderr.write(`🔥 Fatal error: ${err && err.message}\n`);
-    // Cleanup tab if possible (routine: not session-protecting, just good form)
+    // Best effort cleanup if possible
     try {
       handles = handles.length ? handles : await driver.getAllWindowHandles();
       if (handles.length > 1) {
