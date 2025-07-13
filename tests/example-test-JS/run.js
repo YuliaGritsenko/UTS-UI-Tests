@@ -12,12 +12,12 @@ module.exports = async function(driver, parameters = {}) {
   try {
     // 1. Go to a real page, not about:blank
     await driver.get("https://example.com");
-    await driver.sleep(1000);
+    await driver.sleep(3000);
 
     // 2. Inject log
     await driver.executeScript(`console.log(${JSON.stringify(whatToSay)});`);
     log("🧪 Ran console.log in browser.");
-    await driver.sleep(1500);
+    await driver.sleep(3000);
 
     // 3. Get logs (must have been enabled at session creation)
     let entries;
