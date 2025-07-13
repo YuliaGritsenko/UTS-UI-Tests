@@ -1,7 +1,6 @@
 {
-    "title": "Example Test open google",
+    "title": "Example JS test to say somthing",
     "needed-parameters": {
-      "ticket number": "testEmail",
-      "Expected success message": "successMessage"
+      "What to Say": "Hi"
     }
   }
