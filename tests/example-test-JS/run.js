@@ -1,29 +1,33 @@
 const { By, until } = require("selenium-webdriver");
-function log(msg) { process.stdout.write(`${msg}\n`); }
 
-module.exports = async function(driver, parameters = {}) {
+function log(msg) {
+  process.stdout.write(`${msg}\n`);
+}
+
+module.exports = async function (driver, parameters = {}) {
   const whatToSay = parameters.whatToSay || "Hi My Name Is Andrew!!";
   log("🟠 Received parameters:");
   for (const [key, value] of Object.entries(parameters)) {
     log(`• ${key}: ${JSON.stringify(value)}`);
   }
   log(`🟡 Will enter into textarea: ${whatToSay}`);
-
   try {
     // 1. Go to Google Australia
     log("🌏 Navigating to https://www.google.com.au/");
     await driver.get("https://www.google.com.au/");
     await driver.sleep(1500);
 
-    // 2. Handle consent - sometimes Google may show a consent dialog
+    // 2. Handle consent popups (if present)
     try {
-      const agreeBtns = await driver.findElements(By.xpath("//button[.//div[contains(.,'Agree') or contains(.,'accept') or contains(.,'Accept')]]"));
+      const agreeBtns = await driver.findElements(
+        By.xpath("//button[.//div[contains(.,'Agree') or contains(.,'accept') or contains(.,'Accept')]]")
+      );
       if (agreeBtns.length > 0) {
         log("⚠️ Clicking consent/agree button...");
         await agreeBtns[0].click();
         await driver.sleep(1200);
       }
-    } catch (e) { /* ignore */ }
+    } catch (e) { /* ignore silently */ }
 
     // 3. Wait for search textarea
     log("🔎 Waiting for search textarea...");
@@ -45,7 +49,6 @@ module.exports = async function(driver, parameters = {}) {
     // 5. Check value
     const val = await textarea.getAttribute("value");
     log(`🟢 Textarea value is now: ${val}`);
-
     if (val === whatToSay) {
       log("✅ PASS: Textarea contains the right value.");
       return;
@@ -55,6 +58,7 @@ module.exports = async function(driver, parameters = {}) {
     }
   } catch (err) {
     process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
+    // No need for further cleanup here; driver quit is handled by the sequence runner
     throw err;
   }
 };
