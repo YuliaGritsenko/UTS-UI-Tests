@@ -4,6 +4,11 @@ function log(msg) {
   process.stdout.write(`${msg}\n`);
 }
 
+/**
+ * Test: Google Australia Search Textarea Population
+ * @param {WebDriver} driver   - Provided by your sequence runner, should be a fresh driver.
+ * @param {object} parameters  - { whatToSay: string }
+ */
 module.exports = async function (driver, parameters = {}) {
   const whatToSay = parameters.whatToSay || "Hi My Name Is Andrew!!";
   log("🟠 Received parameters:");
@@ -13,12 +18,12 @@ module.exports = async function (driver, parameters = {}) {
   log(`🟡 Will enter into textarea: ${whatToSay}`);
 
   try {
-    // 1. Go to Google Australia
+    // Step 1: Go to Google Australia
     log("🌏 Navigating to https://www.google.com.au/");
     await driver.get("https://www.google.com.au/");
-    await driver.sleep(1500);
+    await driver.sleep(1200);
 
-    // 2. Handle consent popups (if present)
+    // Step 2: Handle consent popups (if present)
     try {
       const agreeBtns = await driver.findElements(
         By.xpath("//button[.//div[contains(.,'Agree') or contains(.,'accept') or contains(.,'Accept')]]")
@@ -26,40 +31,41 @@ module.exports = async function (driver, parameters = {}) {
       if (agreeBtns.length > 0) {
         log("⚠️ Clicking consent/agree button...");
         await agreeBtns[0].click();
-        await driver.sleep(1200);
+        await driver.sleep(800);
       }
-    } catch (e) { /* Ignore consent errors */ }
+    } catch (e) {
+      log("ℹ️ Consent popup skipped or failed to handle (continuing).");
+    }
 
-    // 3. Wait for search textarea
+    // Step 3: Wait for search textarea
     log("🔎 Waiting for search textarea...");
     let textarea;
     try {
       textarea = await driver.wait(until.elementLocated(By.name("q")), 8000);
       await driver.wait(until.elementIsVisible(textarea), 5000);
     } catch (e) {
-      process.stderr.write("❌ FAIL: Search textarea not found or not visible.\n");
+      log("❌ FAIL: Search textarea not found or not visible.");
       throw new Error("Google search textarea not found/visible");
     }
 
-    // 4. Type whatToSay param
+    // Step 4: Type into textarea
     await textarea.clear();
     await textarea.sendKeys(whatToSay);
     log("⌨️ Typed into textarea.");
-    await driver.sleep(600);
+    await driver.sleep(450);
 
-    // 5. Check value
+    // Step 5: Check value
     const val = await textarea.getAttribute("value");
     log(`🟢 Textarea value is now: ${val}`);
     if (val === whatToSay) {
       log("✅ PASS: Textarea contains the right value.");
-      return;
     } else {
-      process.stderr.write(`❌ FAIL: Textarea does NOT contain the expected value!\n`);
+      log(`❌ FAIL: Textarea does NOT contain the expected value!`);
       throw new Error("Textarea does not contain the expected value.");
     }
+
   } catch (err) {
     process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
-    // No cleanup needed—test runner closes webdriver
-    throw err;
+    throw err; // Let the runner handle session closure, etc.
   }
 };
