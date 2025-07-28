@@ -51,9 +51,9 @@ module.exports = async function(driver, parameters = {}) {
     await driver.sleep(3000);
 
     // Get All Locker Elements
-    const lockers = await driver.findElements(By.css('div.locker-info-div'));
+    const lockers_001_040 = await driver.findElements(By.css('div.locker-info-div'));
 
-    for (let locker of lockers) {
+    for (let locker of lockers_001_040) {
       const leaseLocker = await locker.getAttribute('lease-locker');
       const className = await locker.getAttribute('class');
 
