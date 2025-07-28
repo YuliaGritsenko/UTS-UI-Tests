@@ -43,23 +43,32 @@ module.exports = async function(driver, parameters = {}) {
 
        // Get All Locker Elements
 
-    const allLockers_1_40 = driver.findElement(By.className('lockerBankLayout'));
-    allLockers_1_40.forEach(locker => {
-    const leaseLocker = locker.getAttribute("lease-locker");
-    const classList = locker.getAttribute("class");
+    
+    // Select Locker Bank - HS02.01.120_001-040
+    await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
+    await driver.sleep(2000);
+    await driver.findElement(By.xpath("//input[@class='footerButton' and @value='View']")).click();
+    await driver.sleep(3000);
 
-    if (classList.includes("AvailableLockerInfo")) {
-        log(`${leaseLocker} - Available`);
-    } else if (classList.includes("SingleUsePreservedLockerInfo")) {
-        log(`${leaseLocker} - Single Use Preserved, Available`);
-    } else if (classList.includes("FlaggedLockerInfo") || classList.includes("FlexibleReservedLockerInfo")) {
-        const leaseOwner = locker.getAttribute("lease-owner");
-        log(`${leaseLocker} - Reserved by ${leaseOwner}`);
-    } else if (classList.includes("ExpiredLockerInfo")) {
-        const leaseOwner = locker.getAttribute("lease-owner");
-        log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
-    }
-});
+    // Get All Locker Elements
+    const lockers = await driver.findElements(By.css('div.locker-info-div'));
+
+    for (let locker of lockers) {
+      const leaseLocker = await locker.getAttribute('lease-locker');
+      const className = await locker.getAttribute('class');
+
+      if (className.includes('AvailableLockerInfo')) {
+        console.log(`${leaseLocker} - Available`);
+      } else if (className.includes('SingleUsePreservedLockerInfo')) {
+        console.log(`${leaseLocker} - Single Use Preserved, Available`);
+      } else if (className.includes('FlaggedLockerInfo') || className.includes('FlexibleReservedLockerInfo')) {
+        const leaseOwner = await locker.getAttribute('lease-owner');
+        console.log(`${leaseLocker} - Reserved by ${leaseOwner}`);
+      } else if (className.includes('ExpiredLockerInfo')) {
+        const leaseOwner = await locker.getAttribute('lease-owner');
+        console.log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
+      }
+  }
 
         log("🟢 Locker navigation test steps completed successfully.");
     } catch (err) {
