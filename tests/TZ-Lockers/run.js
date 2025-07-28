@@ -189,6 +189,49 @@ module.exports = async function(driver, parameters = {}) {
           console.log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
         }
     }
+      // Add a Reservation
+     await driver.findElement(By.linkText('Add Reservation')).click();
+     await driver.sleep(3000); // Wait for the page to load
+     await driver.findElement(By.id('SalaryID')).SendKeys(login_lockers);
+
+    // Select Neighbourhood
+    await driver.findElement(By.id('NeighbourhoodId')).click();
+    await driver.findElement(By.xpath("//option[text()='Science Lv1']")).click();
+    await driver.sleep(2000);
+
+    await driver.wait(until.elementIsVisible(
+      await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']"))
+    ), 300000);
+
+    // Select Locker Bank - HS02.01.120_001-040
+    await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
+    await driver.sleep(2000);
+    await driver.findElement(By.xpath("//input[@class='footerButton' and @value='Select']")).click();
+    await driver.sleep(3000);
+
+    try {
+      // Find the first available locker
+      const availableLocker = await driver.findElement(By.css('div.AvailableReservationLockerInfo'));
+
+      // Extract the locker number
+      const lockerNumber = await availableLocker.findElement(By.css('span.lockerInfoCode')).getAttribute('data-actualvalue');
+
+      // Click on the available locker
+      await availableLocker.click();
+      await driver.sleep(2000);
+
+      // Click Select
+      await driver.findElement(By.id('addReservation')).click();
+      await driver.sleep(2000);
+
+      // Print the reservation message with the locker number
+      console.log(`Single Reservation made - locker #${lockerNumber}`);
+    } catch (err) {
+      console.log('No available lockers found.');
+    }
+
+    await driver.wait(until.elementLocated(By.id('NeighbourhoodId')), 300000);
+
       log("🟢 Locker navigation test steps completed successfully.");
     } catch (err) {
         process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
