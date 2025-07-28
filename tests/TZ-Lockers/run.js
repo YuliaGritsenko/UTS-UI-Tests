@@ -19,7 +19,7 @@ const edge = require('selenium-webdriver/edge');
         await driver.sleep(2000); // Wait for the page to load
         // Log In as User
         await driver.findElement(By.id("loginUserName")).sendKeys(login_lockers);
-        await driver.findElement(By.id("loginPassword")).sendKeys(username_lockers);
+        await driver.findElement(By.id("loginPassword")).sendKeys(password_lockers);
         await driver.findElement(By.id("loginButton")).click();
         await driver.sleep(2000); // Wait for login
 
