@@ -207,7 +207,7 @@ module.exports = async function(driver, parameters = {}) {
   
     // Select the reservation type
 
-    await driver.findElement(By.xpath("//button[@class='btn btn-daylocker choose-lease-btn' and @leasetype='6' and @leaseeid='7f8a8712-e353-e7ef-5c53-afc3d1e98942']")).Click();
+    await driver.findElement(By.xpath("//button[@class='btn btn-daylocker choose-lease-btn' and @leasetype='6' and @leaseeid='7f8a8712-e353-e7ef-5c53-afc3d1e98942']")).click();
     await driver.findElement(By.id("NeighbourhoodId")).click();
     await driver.findElement(By.xpath("//option[text()='Science Lv1']")).click();
     await driver.wait(until.elementIsVisible(
