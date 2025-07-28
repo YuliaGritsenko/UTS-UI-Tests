@@ -192,12 +192,11 @@ module.exports = async function(driver, parameters = {}) {
       
       
       
-     // 🔐🔐🔐 Add a Reservation🔐🔐🔐 
+     // 🔐Add a Reservation🔐
      await driver.findElement(By.linkText('Add Reservation')).click();
      await driver.sleep(3000); // Wait for the page to load
-     await driver.findElement(By.id('SalaryID')).SendKeys(login_lockers);
+     await driver.findElement(By.id('SalaryID')).sendKeys(login_lockers);
      await driver.FindElement(By.XPath("//input[@class='gridResponsiveFilter' and @value='Search']")).Click();
-      
 
     // Select Neighbourhood
     await driver.findElement(By.id('NeighbourhoodId')).click();
