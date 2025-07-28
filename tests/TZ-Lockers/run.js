@@ -36,41 +36,56 @@ module.exports = async function(driver, parameters = {}) {
         log("🔒 Selecting Locker Bank: HS02.01.120_001-040");
         await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
         await driver.sleep(2000);
-
-        log("👁️ Viewing Locker Bank details");
         await driver.findElement(By.xpath("//input[@class='footerButton' and @value='View']")).click();
         await driver.sleep(3000);
 
-       // Get All Locker Elements
+        // Get All Locker Elements
+        const lockers_001_040 = await driver.findElements(By.css('div.locker-info-div'));
 
-    
-    // Select Locker Bank - HS02.01.120_001-040
-    await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
-    await driver.sleep(2000);
-    await driver.findElement(By.xpath("//input[@class='footerButton' and @value='View']")).click();
-    await driver.sleep(3000);
+        for (let locker of lockers_001_040) {
+        const leaseLocker = await locker.getAttribute('lease-locker');
+        const className = await locker.getAttribute('class');
 
-    // Get All Locker Elements
-    const lockers_001_040 = await driver.findElements(By.css('div.locker-info-div'));
+        if (className.includes('AvailableLockerInfo')) {
+          console.log(`${leaseLocker} - Available`);
+        } else if (className.includes('SingleUsePreservedLockerInfo')) {
+          console.log(`${leaseLocker} - Single Use Preserved, Available`);
+        } else if (className.includes('FlaggedLockerInfo') || className.includes('FlexibleReservedLockerInfo')) {
+          const leaseOwner = await locker.getAttribute('lease-owner');
+          console.log(`${leaseLocker} - Reserved by ${leaseOwner}`);
+        } else if (className.includes('ExpiredLockerInfo')) {
+          const leaseOwner = await locker.getAttribute('lease-owner');
+          console.log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
+        }
+    }
 
-    for (let locker of lockers_001_040) {
-      const leaseLocker = await locker.getAttribute('lease-locker');
-      const className = await locker.getAttribute('class');
+        // Select Locker Bank - HS02.01.120_041-110
+        log("🔒 Selecting Locker Bank: HS02.01.120_041-110");
+        await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
+        await driver.sleep(2000);
+        await driver.findElement(By.xpath("//input[@class='footerButton' and @value='View']")).click();
+        await driver.sleep(3000);
 
-      if (className.includes('AvailableLockerInfo')) {
-        console.log(`${leaseLocker} - Available`);
-      } else if (className.includes('SingleUsePreservedLockerInfo')) {
-        console.log(`${leaseLocker} - Single Use Preserved, Available`);
-      } else if (className.includes('FlaggedLockerInfo') || className.includes('FlexibleReservedLockerInfo')) {
-        const leaseOwner = await locker.getAttribute('lease-owner');
-        console.log(`${leaseLocker} - Reserved by ${leaseOwner}`);
-      } else if (className.includes('ExpiredLockerInfo')) {
-        const leaseOwner = await locker.getAttribute('lease-owner');
-        console.log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
-      }
-  }
+        // Get All Locker Elements
+        const lockers_041_110 = await driver.findElements(By.css('div.locker-info-div'));
 
-        log("🟢 Locker navigation test steps completed successfully.");
+        for (let locker of lockers_041_110) {
+        const leaseLocker = await locker.getAttribute('lease-locker');
+        const className = await locker.getAttribute('class');
+
+        if (className.includes('AvailableLockerInfo')) {
+          console.log(`${leaseLocker} - Available`);
+        } else if (className.includes('SingleUsePreservedLockerInfo')) {
+          console.log(`${leaseLocker} - Single Use Preserved, Available`);
+        } else if (className.includes('FlaggedLockerInfo') || className.includes('FlexibleReservedLockerInfo')) {
+          const leaseOwner = await locker.getAttribute('lease-owner');
+          console.log(`${leaseLocker} - Reserved by ${leaseOwner}`);
+        } else if (className.includes('ExpiredLockerInfo')) {
+          const leaseOwner = await locker.getAttribute('lease-owner');
+          console.log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
+        }
+    } 
+      log("🟢 Locker navigation test steps completed successfully.");
     } catch (err) {
         process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
         throw err;
