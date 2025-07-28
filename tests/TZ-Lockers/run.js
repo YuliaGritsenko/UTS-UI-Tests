@@ -2,10 +2,9 @@ const { By, until } = require("selenium-webdriver");
 const edge = require('selenium-webdriver/edge');
 
 
-(async function main() {
-    // Initialize WebDriver
-    let driver = await new Builder().forBrowser('MicrosoftEdge').build();
-    
+module.exports = async function(driver, parameters = {}) {
+   
+  
     // Initialize URLs and credentials
     const url = "https://cb2lockersci.uts.edu.au";
     const login_lockers = parameters.LOGLOCKERS1 || "";
