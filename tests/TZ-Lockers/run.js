@@ -42,13 +42,15 @@ module.exports = async function(driver, parameters = {}) {
         await driver.sleep(3000);
 
        // Get All Locker Elements
-var allLockers = driver.FindElements(By.CssSelector("div.locker-info-div"));       
+
+const allLockers = document.querySelectorAll("div.locker-info-div");
+      
 allLockers.forEach(locker => {
     const leaseLocker = locker.getAttribute("lease-locker");
     const classList = locker.getAttribute("class");
 
     if (classList.includes("AvailableLockerInfo")) {
-        log(`👁️${leaseLocker} - Available`);
+        log(`${leaseLocker} - Available`);
     } else if (classList.includes("SingleUsePreservedLockerInfo")) {
         log(`${leaseLocker} - Single Use Preserved, Available`);
     } else if (classList.includes("FlaggedLockerInfo") || classList.includes("FlexibleReservedLockerInfo")) {
