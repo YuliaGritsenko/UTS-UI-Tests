@@ -197,12 +197,11 @@ module.exports = async function(driver, parameters = {}) {
      await driver.sleep(3000); // Wait for the page to load
      await driver.findElement(By.id('SalaryID')).sendKeys(login_lockers);
      await driver.findElement(By.xpath("//input[@class='gridResponsiveFilter' and @value='Search']")).click();
-     
-    // Wait until the element is located and visible
-    let element = await driver.wait(until.elementLocated(By.css('span[title="username_lockers"]')),
+    await driver.sleep(2000);
     
     // Select User                                
-    await driver.findElement(By.css('span[title="username_lockers"]')).click();
+
+    await driver.findElement(By.xpath(`//span[@title='${username_lockers}']`)).click();
     await driver.findElement(By.xpath("//input[@class='footerButton' and @value='Select']")).click();
     await driver.sleep(2000);
   
