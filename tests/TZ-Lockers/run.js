@@ -32,7 +32,8 @@ module.exports = async function(driver, parameters = {}) {
         await driver.findElement(By.xpath("//option[text()='Science Lv1']")).click();
         await driver.sleep(2000);
 
-        // Select Locker Bank - HS02.01.120_001-040
+/* 
+      // Select Locker Bank - HS02.01.120_001-040
         log("🔒 Selecting Locker Bank: HS02.01.120_001-040");
         await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
         await driver.sleep(2000);
@@ -190,7 +191,7 @@ module.exports = async function(driver, parameters = {}) {
         }
     }
       
-      
+      */
       
      // 🔐Add a Reservation🔐
      await driver.findElement(By.linkText('Add Reservation')).click();
@@ -214,9 +215,9 @@ await driver.findElement(
 
     await driver.findElement(By.id("NeighbourhoodId")).click();
     await driver.findElement(By.xpath("//option[text()='Science Lv1']")).click();
-    await driver.wait(until.elementIsVisible(
-    await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']"))
-    ), 300000);
+
+    await driver.wait(until.elementIsVisible(await driver.wait(until.elementLocated(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")), 300000)), 300000).click();
+
 
     // Select Locker Bank - HS02.01.120_001-040
     await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']")).click();
