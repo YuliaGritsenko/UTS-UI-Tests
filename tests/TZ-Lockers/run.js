@@ -42,7 +42,7 @@ module.exports = async function(driver, parameters = {}) {
         await driver.sleep(3000);
 
        // Get All Locker Elements
-       
+var allLockers = driver.FindElements(By.CssSelector("div.locker-info-div"));       
 allLockers.forEach(locker => {
     const leaseLocker = locker.getAttribute("lease-locker");
     const classList = locker.getAttribute("class");
