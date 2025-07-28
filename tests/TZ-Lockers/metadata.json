@@ -1,10 +1,6 @@
 {
   "title": "TZ Locker test",
   "needed-parameters": [
-    {
-      "name": "whatToSay",
-      "label": "What to say",
-      "default": "Hi My Name Is Andrew!!"
-    }
+
   ]
 }
