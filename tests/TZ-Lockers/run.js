@@ -197,14 +197,22 @@ module.exports = async function(driver, parameters = {}) {
      await driver.sleep(3000); // Wait for the page to load
      await driver.findElement(By.id('SalaryID')).sendKeys(login_lockers);
      await driver.findElement(By.xpath("//input[@class='gridResponsiveFilter' and @value='Search']")).click();
-
-    // Select Neighbourhood
-    await driver.findElement(By.id('NeighbourhoodId')).click();
-    await driver.findElement(By.xpath("//option[text()='Science Lv1']")).click();
+     
+    // Wait until the element is located and visible
+    let element = await driver.wait(until.elementLocated(By.css('span[title="username_lockers"]')),
+    
+    // Select User                                
+    await driver.findElement(By.css('span[title="username_lockers"]')).click();
+    await driver.findElement(By.xpath("//input[@class='footerButton' and @value='Select']")).click();
     await driver.sleep(2000);
+  
+    // Select the reservation type
 
+    await driver.findElement(By.xpath("//button[@class='btn btn-daylocker choose-lease-btn' and @leasetype='6' and @leaseeid='7f8a8712-e353-e7ef-5c53-afc3d1e98942']")).Click();
+    await driver.findElement(By.id("NeighbourhoodId")).click();
+    await driver.findElement(By.xpath("//option[text()='Science Lv1']")).click();
     await driver.wait(until.elementIsVisible(
-      await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']"))
+    await driver.findElement(By.xpath("//span[@class='gridContentOverflow' and @title='HS02.01.120_001-040']"))
     ), 300000);
 
     // Select Locker Bank - HS02.01.120_001-040
