@@ -41,6 +41,25 @@ module.exports = async function(driver, parameters = {}) {
         await driver.findElement(By.xpath("//input[@class='footerButton' and @value='View']")).click();
         await driver.sleep(3000);
 
+       // Get All Locker Elements
+       
+allLockers.forEach(locker => {
+    const leaseLocker = locker.getAttribute("lease-locker");
+    const classList = locker.getAttribute("class");
+
+    if (classList.includes("AvailableLockerInfo")) {
+        log(`👁️${leaseLocker} - Available`);
+    } else if (classList.includes("SingleUsePreservedLockerInfo")) {
+        log(`${leaseLocker} - Single Use Preserved, Available`);
+    } else if (classList.includes("FlaggedLockerInfo") || classList.includes("FlexibleReservedLockerInfo")) {
+        const leaseOwner = locker.getAttribute("lease-owner");
+        log(`${leaseLocker} - Reserved by ${leaseOwner}`);
+    } else if (classList.includes("ExpiredLockerInfo")) {
+        const leaseOwner = locker.getAttribute("lease-owner");
+        log(`${leaseLocker} - Expired - Reserved by ${leaseOwner}`);
+    }
+});
+
         log("🟢 Locker navigation test steps completed successfully.");
     } catch (err) {
         process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
