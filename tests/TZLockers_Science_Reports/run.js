@@ -1,5 +1,6 @@
 const { By, until } = require("selenium-webdriver");
 const edge = require('selenium-webdriver/edge');
+const fs = require('fs');
 
 function log(msg) {
   process.stdout.write(`${msg}\n`);
