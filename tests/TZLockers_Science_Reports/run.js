@@ -15,7 +15,7 @@ module.exports = async function(driver, parameters = {}) {
     const urlLS = "https://cb2lockersci.uts.edu.au/Report/LeaseSummary"; // Reservations Summary
     const urlEL = "https://cb2lockersci.uts.edu.au/Report/ExpiredLockers"; // Expired Lockers
     const urlFL = "https://cb2lockersci.uts.edu.au/Report/FlaggedLockers"; // Flagged Lockers
-    const urlIL = "https://cb2lockersci.uts.edu.au/Report/LockerInactivity; // Inactive Lockers
+    const urlIL = "https://cb2lockersci.uts.edu.au/Report/LockerInactivity"; // Inactive Lockers
     const urlUA = "https://cb2lockersci.uts.edu.au/Report/UserActivities"; // User Activities
     const urlOA = "https://cb2lockersci.uts.edu.au/Report/OperatorActivities"; // Operator Activities
     const urlSE = "https://cb2lockersci.uts.edu.au/Report/SystemEvents"; // System Events
