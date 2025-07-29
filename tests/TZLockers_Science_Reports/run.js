@@ -40,6 +40,6 @@ module.exports = async function(driver, parameters = {}) {
         throw err;
     } finally {
        // Optionally close the browser
-       await driver.quit();
+      // await driver.quit();
     }
 };
