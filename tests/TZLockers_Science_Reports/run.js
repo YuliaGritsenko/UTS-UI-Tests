@@ -14,7 +14,7 @@ module.exports = async function(driver, parameters = {}) {
     const password_lockers = parameters.PASSLOCKERS1 || "";
     const username_lockers = parameters.USERLOCKERS1 || "";
 
-    log("🟠 Starting TZ Lockers Add Reservation Test - Science");
+    log("🟠 Starting TZ Lockers Generate Reports Test - Science");
     try {
         // Launch the Website
         log(`🌏 Navigating to ${url}`);
@@ -32,7 +32,11 @@ module.exports = async function(driver, parameters = {}) {
         await driver.get(urlAL);
         await driver.sleep(2000); // Wait for the page to load
         await driver.findElement(By.id("generateReportBtn")).click();
-
+        await driver.sleep(3000); // Wait for the report is generated
+          // Take a screenshot
+          let image = await driver.takeScreenshot();
+          // Save the screenshot to a file
+          fs.writeFileSync('screenshot.png', image, 'base64');
 
       log("🟢 Locker Reports test steps completed successfully.");
     } catch (err) {
