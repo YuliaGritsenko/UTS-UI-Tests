@@ -17,7 +17,7 @@ module.exports = async function(driver, parameters = {}) {
     try {
         // Launch the Website
         log(`🌏 Navigating to ${url}`);
-        await driver.get(url);
+        await driver.get(urlNewReport);
         await driver.sleep(2000); // Wait for the page to load
 
         // Log In as User
@@ -27,12 +27,12 @@ module.exports = async function(driver, parameters = {}) {
         await driver.findElement(By.id("password")).sendKeys(password)
         await driver.findElement(By.id("login")).click();
         await driver.sleep(7000); // Wait for login
-
+/*
         log(`🌏 Navigating to ${url}`);
         await driver.get(urlNewReport);
         await driver.sleep(7000); // Wait for the page to load
 
-/*
+
 
 
         // Select Neighbourhood
