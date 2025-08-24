@@ -9,9 +9,9 @@ module.exports = async function(driver, parameters = {}) {
     // Initialize URLs and credentials
     const url = "https://peoplecounter.uts.edu.au/";
     const urlNewReport = "https://peoplecounter.uts.edu.au/SpaceAuditTechnology/reports/FOUBySpace?rt=FOUBySpace&a=Room&faculties=&departments=&campus=CB&buildings=CB04&level=05&room=&b=CB04.05&r=&tt=&capacityBand=&cmin=&cmax=&course=&class=&session=&dstart=2025-05-01&dend=2025-05-15&fdstart=2025-05-01&fdend=2025-05-15&time_period=&excludetype=Public&periodsInclude=all&booked_periods=1&walk_in_periods=1&days=1%2C2%2C3%2C4%2C5%2C6%2C7&tchooser=Day+Core&tstart=08%3A00&tend=18%3A00&OccPer=&CapPer=&gb=RoomName/";
-    const ccode = parameters.CustomerCodepplcount1 || "";
-    const password = parameters.PASSpplcount1 || "";
-    const username = parameters.USERpplcount1 || "";
+    const ccode = parameters.CUSTOMERCODEPPLCOUNT1 || "";
+    const password = parameters.PASSPPLCOUNT1 || "";
+    const username = parameters.USERPPLCOUNT1 || "";
 
     log("🟠 Starting People Counter Navigation Test");
     try {
