@@ -31,10 +31,7 @@ module.exports = async function(driver, parameters = {}) {
         log("🔐 Filling the report form");
 
 
-        
-        await driver.wait(until.elementLocated(By.css('a[href="/SpaceAuditTechnology/newReport"]')), 10000);
-        await driver.findElement(By.css('a[href="/SpaceAuditTechnology/newReport"]')).click();
-
+        await driver.findElement(By.css('a[href="/SpaceAuditTechnology"] img')).click();
         await driver.sleep(2000);
 
         // Report Type 
