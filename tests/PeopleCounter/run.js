@@ -37,10 +37,8 @@ module.exports = async function(driver, parameters = {}) {
         await driver.sleep(2000);
 
         // Report Type 
-        // Wait until the select element is present
-          await driver.wait(until.elementLocated(By.id('rt')), 10000);
         // Select the option by value
-        await reportType.findElement(By.css('option[value="NoOfRoomsAndSeats"]')).click();
+        await driver.findElement(By.css('select#rt option[value="FOUBySpace"]')).click();
 
         // Room, Desk or Group: 
         // Wait until the select element is present
