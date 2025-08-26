@@ -29,11 +29,16 @@ module.exports = async function(driver, parameters = {}) {
 
        // Create New Report
         log("🔐 Filling the report form");
-        await driver.findElement(By.linkText("New Report")).click();
+
+        await driver.wait(
+            until.elementLocated(By.css('a[href="/SpaceAuditTechnology/newReport"]')),
+            10000).click();
+
+
 
         // Report Type 
         // Wait until the select element is present
-        let reportType = await driver.wait(until.elementLocated(By.id('rt')), 10000);
+          await driver.wait(until.elementLocated(By.id('rt')), 10000);
         // Select the option by value
         await reportType.findElement(By.css('option[value="NoOfRoomsAndSeats"]')).click();
 
