@@ -33,18 +33,15 @@ module.exports = async function(driver, parameters = {}) {
 
         // Report Type 
         // Wait until the select element is present
-        let reportType = await driver.wait(until.elementLocated(By.id('rt')), 10000);
+        let selectElement = await driver.wait(until.elementLocated(By.id('rt')), 10000);
         // Select the option by value
-        await reportType.findElement(By.css('option[value="NoOfRoomsAndSeats"]')).click();
+        await selectElement.findElement(By.css('option[value="NoOfRoomsAndSeats"]')).click();
 
-        // Room, Desk or Group: 
-        // Wait until the select element is present
-        let roomDeskGroup = await driver.wait(until.elementLocated(By.id('a')), 10000);
-        // Select the option by value
-        await roomDeskGroup.findElement(By.css('option[value="Room"]')).click();
-        // 
-      
 
+
+    } catch (err) {
+        process.stderr.write(`🔥 Fatal test error: ${err && err.message}\n`);
+        throw err; 
     } finally {
         // Close the browser
         await driver.quit(); 
