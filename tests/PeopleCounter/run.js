@@ -33,6 +33,8 @@ module.exports = async function(driver, parameters = {}) {
 
         await driver.findElement(By.css('a[href="/SpaceAuditTechnology"] img')).click();
         await driver.sleep(2000);
+        await driver.findElement(By.css('a[href="/SpaceAuditTechnology/newReport"]'));
+        await driver.sleep(2000);
 
         // Report Type 
         // Wait until the select element is present
